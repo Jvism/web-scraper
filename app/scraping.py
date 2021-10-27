@@ -42,8 +42,6 @@ def extract_data(soup):
         tax = book_information[4].text
         number_reviews = book_information[6].text
 
-        print(book_information)
-
         data_book.extend([title,price,stock,category,cover,upc,product_type,price_excl_tax,price_incl_tax,tax,stock,number_reviews])
 
     return data_book
@@ -52,13 +50,26 @@ def export_csv(data):
     contador = 0
 
     file = open('books_data.csv','w',encoding="utf-8")
-    file.write('"title","price","stock","category","cover","upc","product type","price (excl. tax)","price (incl. tac)","tax","availability","number of reviews"\n')
+    file.write('title,price,stock,category,cover,upc,product type,price (excl. tax),price (incl. tac),tax,availability,number of reviews\n')
 
     for book_data in data:
         info = ''
-        for information in book_data:
-            info += '"'+ information + '"' + ','
-        file.write(str(contador+1)+ ',' + info + '\n')
+        for index,information in enumerate(book_data):
+
+            if index == 0:
+                words = information.split(',')
+                title = ''
+                for word in words:
+                    title += word
+                
+                info += title + ','
+
+            elif index == len(book_data)-1:
+                info += information 
+
+            else:
+                info += information + ','
+        file.write(info + '\n')
         clearConsole()
         print(str(round(contador*0.1,1)) + '%')
 
@@ -66,21 +77,26 @@ def export_csv(data):
 
     file.close()
 
-url_web = 'https://books.toscrape.com/'
-urls_books = []
-number_pages = 50
+def launch_app():
+    url_web = 'https://books.toscrape.com/'
+    urls_books = []
+    number_pages = 50
 
-for page in range(number_pages):
-    urls_books.extend(urls_extract(soup_recover(url_web + 'catalogue/page-' + str(page+1) + '.html')))
-    clearConsole()
-    print(str(round((page)*2,1)) + '%')
+    for page in range(number_pages):
+        urls_books.extend(urls_extract(soup_recover(url_web + 'catalogue/page-' + str(page+1) + '.html')))
+        clearConsole()
+        print(str(round((page)*2,1)) + '%')
 
 
-data_books = []
+    data_books = []
 
-for index,url in enumerate(urls_books):
-    data_books.append(extract_data(soup_recover(url)))
-    # clearConsole()
-    print(str(round(index*0.1,1)) + '%')
+    for index,url in enumerate(urls_books):
+        data_books.append(extract_data(soup_recover(url)))
+        clearConsole()
+        print(str(round(index*0.1,1)) + '%')
 
-export_csv(data_books)
+    export_csv(data_books)
+
+    return
+
+launch_app()
